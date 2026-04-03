@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'upload_page.dart';
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final database = FirebaseDatabase.instance.ref();
+  Map<dynamic, dynamic> mangas = {};
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMangas();
+  }
+
+  fetchMangas() async {
+    final snapshot = await database.child('mangas').get();
+    if (snapshot.exists) {
+      setState(() {
+        mangas = snapshot.value as Map<dynamic, dynamic>;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("مانجاي")),
+      body: ListView(
+        children: mangas.keys.map((key) {
+          return ListTile(
+            title: Text(key),
+            onTap: () {
+              // يمكن إضافة صفحة تفاصيل الفصل لاحقًا
+            },
+          );
+        }).toList(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.upload),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => UploadPage()));
+        },
+      ),
+    );
+  }
+}

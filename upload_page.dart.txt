@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../services/firebase_service.dart';
+
+class UploadPage extends StatefulWidget {
+  @override
+  _UploadPageState createState() => _UploadPageState();
+}
+
+class _UploadPageState extends State<UploadPage> {
+  final picker = ImagePicker();
+  List<XFile>? images = [];
+  final FirebaseService firebaseService = FirebaseService();
+
+  String mangaName = '';
+  String chapterName = '';
+
+  pickImages() async {
+    final picked = await picker.pickMultiImage();
+    if (picked != null) {
+      setState(() {
+        images = picked;
+      });
+    }
+  }
+
+  uploadChapter() async {
+    if (mangaName.isEmpty || chapterName.isEmpty || images!.isEmpty) return;
+
+    List<String> urls = [];
+    for (var img in images!) {
+      String url = await firebaseService.uploadImage(mangaName, chapterName, File(img.path));
+      urls.add(url);
+    }
+
+    await firebaseService.createChapter(mangaName, chapterName, urls);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم رفع الفصل بنجاح')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("رفع مانجا")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(labelText: 'اسم المانجا'),
+              onChanged: (val) => mangaName = val,
+            ),
+            TextField(
+              decoration: InputDecoration(labelText: 'اسم الفصل'),
+              onChanged: (val) => chapterName = val,
+            ),
+            ElevatedButton(onPressed: pickImages, child: Text("اختر صور الفصل")),
+            Expanded(
+              child: ListView(
+                children: images!.map((img) => Image.file(File(img.path))).toList(),
+              ),
+            ),
+            ElevatedButton(onPressed: uploadChapter, child: Text("رفع الفصل")),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,26 @@
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'dart:io';
+
+class FirebaseService {
+  final storage = FirebaseStorage.instance;
+  final database = FirebaseDatabase.instance.ref();
+
+  Future<String> uploadImage(String mangaName, String chapterName, File file) async {
+    String path = '$mangaName/$chapterName/${file.uri.pathSegments.last}';
+    UploadTask task = storage.ref(path).putFile(file);
+    await task.whenComplete(() => null);
+    return await storage.ref(path).getDownloadURL();
+  }
+
+  Future<void> createChapter(String mangaName, String chapterName, List<String> imageUrls) async {
+    await database.child('mangas/$mangaName/chapters/$chapterName').set({
+      'images': imageUrls,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<void> createManga(String mangaName, Map<String, dynamic> info) async {
+    await database.child('mangas/$mangaName').set(info);
+  }
+}
