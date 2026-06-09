@@ -1,16 +1,540 @@
-name: manga_app
-description: تطبيق لعرض  ورفع المانجا العربية البصمة الأخيرة
-version: 1.0.0+1
-environment:
-  sdk: ">=2.18.0 <3.0.0"
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البصمة الأخيرة - The Last Imprint</title>
+    
+    <!-- ربط شعار التثبيت للهواتف وأنظمة التشغيل برمجياً -->
+    <link rel="icon" type="image/png" href="https://files.catbox.moe/v033cl.png">
+    <link rel="apple-touch-icon" href="https://files.catbox.moe/v033cl.png">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkDYp9mE2KjZgSDZhdipINin2YTYp9iu2YrYsdipIiwKICAic2hvcnRfbmFtZSI6ICLQp9mE2KjZgSDZhdipIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwNTA1MDgiLAogICJ0aGVtZV9jb29yIjogIiMwYjBjMTAiLAogICJicons":IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ZpbGVzLmNhdGJveC5tb2UvdjAzM2NsLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ==">
 
-dependencies:
-  flutter:
-    sdk: flutter
-  firebase_core: ^2.28.0
-  firebase_database: ^10.1.0
-  firebase_storage: ^11.2.0
-  image_picker: ^0.8.7+5
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* استدعاء وتثبيت خط Qahwa Arabic Bold */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        @font-face {
+            font-family: 'Qahwa Arabic Bold';
+            src: url('https://fonts.cdnfonts.com/s/91244/Qahwa-Bold.woff') format('woff'),
+                 local('Qahwa Arabic Bold'), local('Qahwa-Bold');
+            font-weight: bold;
+            font-style: normal;
+        }
 
-flutter:
-  uses-material-design: true
+        body { 
+            background-color: #050508; 
+            color: #c5c6c7; 
+            font-family: 'Cairo', system-ui, -apple-system, sans-serif; 
+        }
+
+        /* تطبيق خط القهوة البولد على العناصر الأساسية */
+        h1, h2, h3, h4, .main-font-qahwa, .nav-btn, .tab-title {
+            font-family: 'Qahwa Arabic Bold', 'Cairo', sans-serif !important;
+            font-weight: bold;
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(102, 252, 241, 0.2);
+            border: 1px solid rgba(102, 252, 241, 0.4);
+        }
+        .neon-glow-hover:hover {
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.6);
+            border-color: #66fcf1;
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active { 
+            color: #66fcf1; 
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.8);
+            border-bottom: 2px solid #66fcf1; 
+        }
+        
+        /* الحاوية الذكية للشعار المفرغ بالكامل بتأثير الغليتش النقي */
+        .glitch-logo-container {
+            position: relative;
+            display: inline-block;
+            height: 48px;
+            width: 140px;
+            overflow: hidden;
+        }
+        
+        /* تصفية وعزل خلفية الشعار تماماً وجعلها مفرغة وواضحة جداً فوق اللون الداكن */
+        .glitch-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+            /* فلتر متطور لعزل اللون الأبيض/الرمادي بالكامل وتحويل الشعار إلى لون نيون متناسق */
+            filter: invert(1) contrast(200%) brightness(1.2) drop-shadow(0 0 2px rgba(102,252,241,0.5));
+        }
+
+        /* تأثير الغليتش المطور ثلاثي الطبقات الحركية */
+        .glitch-logo-base {
+            animation: logo-shift 2.5s ease-in-out infinite alternate;
+        }
+        .glitch-logo-cyan {
+            animation: logo-glitch-cyan 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite both;
+            filter: invert(1) contrast(200%) sepia(1) hue-rotate(140deg) saturate(6) drop-shadow(-2px 0 #06b6d4);
+            opacity: 0.6;
+        }
+        .glitch-logo-purple {
+            animation: logo-glitch-purple 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite reverse both;
+            filter: invert(1) contrast(200%) sepia(1) hue-rotate(250deg) saturate(5) drop-shadow(2px 0 #8b5cf6);
+            opacity: 0.6;
+        }
+
+        @keyframes logo-glitch-cyan {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 1px); }
+            40% { transform: translate(-1px, -1px); }
+            60% { transform: translate(1px, 1px); }
+            80% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0); }
+        }
+        @keyframes logo-glitch-purple {
+            0% { transform: translate(0); }
+            20% { transform: translate(1px, -1px); }
+            40% { transform: translate(-1px, 1px); }
+            60% { transform: translate(-1px, -1px); }
+            80% { transform: translate(2px, 1px); }
+            100% { transform: translate(0); }
+        }
+        @keyframes logo-shift {
+            0%, 40%, 44%, 58%, 61%, 65%, 69%, 73%, 100% { transform: skewX(0deg) scale(1); }
+            41% { transform: skewX(5deg) scale(1.02); }
+            42% { transform: skewX(-5deg) scale(0.98); }
+            59% { transform: skewX(8deg) scale(1.01); }
+            60% { transform: skewX(-8deg) scale(0.99); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- الهيدر العلوي مع الشعار المعزول تماماً عن خلفيته وتأثير الغليتش -->
+    <header class="bg-[#0b0c10] border-b border-cyan-900/50 sticky top-0 z-50 px-4 py-2 flex justify-between items-center backdrop-blur-md bg-opacity-90">
+        <!-- حاوية الشعار المفرغ والمحمي من الخلفيات العشوائية -->
+        <div class="glitch-logo-container cursor-pointer" onclick="switchTab('info')">
+            <img src="https://files.catbox.moe/ejzt07.jpg" class="glitch-logo glitch-logo-cyan" alt="Logo Glitch Cyan">
+            <img src="https://files.catbox.moe/ejzt07.jpg" class="glitch-logo glitch-logo-purple" alt="Logo Glitch Purple">
+            <img src="https://files.catbox.moe/ejzt07.jpg" class="glitch-logo glitch-logo-base" alt="Logo Main">
+        </div>
+
+        <nav class="flex gap-2 sm:gap-3 overflow-x-auto">
+            <button onclick="switchTab('info')" id="btn-info" class="nav-btn active pb-1 text-xs sm:text-sm font-bold tracking-wide">معلومات</button>
+            <button onclick="switchTab('manga')" id="btn-manga" class="nav-btn pb-1 text-xs sm:text-sm font-bold tracking-wide">الفصول</button>
+            <button onclick="switchTab('news')" id="btn-news" class="nav-btn pb-1 text-xs sm:text-sm font-bold tracking-wide">الأخبار</button>
+            <button onclick="switchTab('store')" id="btn-store" class="nav-btn pb-1 text-xs sm:text-sm font-bold tracking-wide">المتجر</button>
+            <button onclick="tryAccessAdmin()" id="btn-admin" class="nav-btn pb-1 text-xs sm:text-sm font-bold text-purple-400"><i class="fas fa-lock"></i></button>
+        </nav>
+    </header>
+
+    <!-- محتوى التطبيق الأساسي -->
+    <main class="p-4 max-w-4xl mx-auto w-full flex-grow mb-10">
+        
+        <!-- قسم معلومات المانجا الرئيسي بخط Qahwa Bold -->
+        <section id="sec-info" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#0b0c10]/80 p-6 rounded-xl border border-purple-900/30 shadow-2xl neon-glow">
+                <!-- الغلاف المتوهج -->
+                <div class="md:col-span-1 flex flex-col items-center">
+                    <div class="relative group p-1 bg-gradient-to-b from-cyan-500 to-purple-600 rounded-lg shadow-2xl">
+                        <img src="https://files.catbox.moe/84blee.jpg" class="w-full max-w-[240px] rounded-md object-cover" alt="غلاف المانجا">
+                    </div>
+                    <button onclick="switchTab('manga')" class="main-font-qahwa w-full max-w-[240px] mt-5 bg-[#66fcf1] text-black font-black py-3 rounded-lg shadow-lg hover:shadow-cyan-400/50 transition duration-300 flex items-center justify-center gap-2 tracking-wider">
+                        <i class="fas fa-book-open"></i> اقرأ الفصول الآن
+                    </button>
+                </div>
+                <!-- تفاصيل المانجا المنسقة بالخط الجديد -->
+                <div class="md:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-1 tracking-wide">البصمة الأخيرة</h2>
+                        <h3 class="text-xs font-bold tracking-widest text-cyan-400 mb-4 font-mono">THE LAST IMPRINT</h3>
+                        
+                        <!-- التصنيفات -->
+                        <div class="flex flex-wrap gap-2 mb-4 main-font-qahwa">
+                            <span class="border border-purple-500 bg-purple-950/40 text-purple-300 text-xs px-3 py-1 rounded-md">غموض</span>
+                            <span class="border border-cyan-500 bg-cyan-950/40 text-cyan-300 text-xs px-3 py-1 rounded-md">خيال علمي</span>
+                            <span class="border border-red-500 bg-red-950/40 text-red-300 text-xs px-3 py-1 rounded-md">دراما</span>
+                            <span class="border border-gray-500 bg-gray-950/40 text-gray-300 text-xs px-3 py-1 rounded-md">نفسي</span>
+                        </div>
+
+                        <!-- شبكة البيانات الرقمية -->
+                        <div class="grid grid-cols-2 gap-y-3 gap-x-4 bg-[#050508] p-4 rounded-lg text-xs sm:text-sm border border-gray-800 mb-4 font-medium">
+                            <div><span class="text-gray-500">المؤلف:</span> <span class="text-white">Hamodi Almedainy</span></div>
+                            <div><span class="text-gray-500">الرسام الرقمي:</span> <span class="text-white">Gemini AI</span></div>
+                            <div><span class="text-gray-500">سنة الإصدار:</span> <span class="text-white font-mono">2026</span></div>
+                            <div><span class="text-gray-500">حالة العمل:</span> <span class="text-green-400 font-bold animate-pulse">مستمرة ✦</span></div>
+                            <div><span class="text-gray-500">نوع العمل:</span> <span class="text-white">مانجا عربية</span></div>
+                            <div><span class="text-gray-500">عدد الفصول:</span> <span id="info-chapters-count" class="text-[#66fcf1] font-bold">0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- القصة والملف البوليسي -->
+                    <div class="border-t border-purple-900/30 pt-4">
+                        <h4 class="text-xs font-bold text-cyan-400 mb-2 uppercase tracking-widest"><i class="fas fa-scroll"></i> ملف القضية والقصة:</h4>
+                        <p class="text-sm leading-relaxed text-gray-300 text-justify bg-[#050508] p-3 rounded-lg border border-gray-950">
+                            العام 6026 بعد اختراع العالم الافتراضي. <br class="mb-2">
+                            ماكاتو إيغيرو، محقق شاب وطموح يعمل على حلّ القضايا بغاية الاحترافية، وسجله حافل بالنجاح. <br class="mb-2">
+                            بعد لقائه براي ريويا، الطبيب الجراح الذي يهوى الألغاز والغموض، أدّى به ذلك إلى أن يكونا ثنائياً معاً لكشف الحقائق وتحقيق العدالة. <br class="mb-2">
+                            في يوم ما تعترضه قضية كادت تصيبه بالجنون، مما أدّى به إلى طلب المساعدة من صديقه الطبيب الجراح لعله يساعده في حلّ اللغز. <br class="mb-2">
+                            يعتقد ماكاتو أن هذه القضية ليست بالقضية العادية أبداً.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- قسم فصول المانجا -->
+        <section id="sec-manga" class="tab-content hidden">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white"><i class="fas fa-th-list text-[#66fcf1]"></i> سجل الفصول المؤرشفة</h2>
+            <div id="manga-list" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- قارئ المانجا المدمج -->
+        <section id="sec-reader" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-4 bg-[#0b0c10] p-2.5 rounded-lg border border-purple-900/30">
+                <button onclick="switchTab('manga')" class="main-font-qahwa bg-purple-950/60 hover:bg-purple-900 border border-purple-500/40 text-white px-3 py-1.5 rounded-md text-xs transition flex items-center gap-1">
+                    <i class="fas fa-arrow-right"></i> قائمة الفصول
+                </button>
+                <h2 id="reader-title" class="text-sm font-bold text-cyan-400"></h2>
+                <div class="w-10"></div>
+            </div>
+            <div id="viewer-pages" class="flex flex-col gap-3 items-center bg-[#010103] p-2 rounded-xl border border-cyan-900/20 shadow-inner"></div>
+            <div class="mt-6 flex justify-center">
+                <button onclick="switchTab('manga')" class="main-font-qahwa bg-gradient-to-r from-purple-900 to-cyan-900 border border-cyan-500/30 hover:opacity-90 px-8 py-2.5 rounded-lg text-sm font-bold text-white transition shadow-lg">
+                    تمت قراءة الفصل بنجاح بنهاية رقمية
+                </button>
+            </div>
+        </section>
+
+        <!-- قسم الأخبار -->
+        <section id="sec-news" class="tab-content hidden">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white"><i class="fas fa-bold text-[#66fcf1]"></i> بث التحديثات الفورية</h2>
+            <div id="news-list" class="flex flex-col gap-4"></div>
+        </section>
+
+        <!-- قسم المتجر -->
+        <section id="sec-store" class="tab-content hidden">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white"><i class="fas fa-microchip text-[#66fcf1]"></i> الملحقات والمنتجات الرقمية الحصرية</h2>
+            <div id="store-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- لوحة التحكم المحمية -->
+        <section id="sec-admin" class="tab-content hidden">
+            <div class="bg-[#0b0c10] p-6 rounded-xl border border-purple-500/30 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-6">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fas fa-terminal text-purple-400"></i> وحدة التحكم الإدارية الفوقية</h2>
+                    <span class="text-[10px] bg-purple-950 text-purple-300 font-mono px-2 py-1 rounded border border-purple-800">AUTHOR ONLY ACCESS</span>
+                </div>
+
+                <div class="flex gap-2 mb-6 overflow-x-auto pb-2 main-font-qahwa">
+                    <button onclick="switchAdminSubTab('add-chapter')" id="sub-btn-add-chapter" class="bg-[#050508] border border-gray-800 text-xs text-white px-3 py-2 rounded shrink-0">إضافة فصل جديد</button>
+                    <button onclick="switchAdminSubTab('add-news')" id="sub-btn-add-news" class="bg-[#050508] border border-gray-800 text-xs text-white px-3 py-2 rounded shrink-0">إرسال خبر</button>
+                    <button onclick="switchAdminSubTab('add-product')" id="sub-btn-add-product" class="bg-[#050508] border border-gray-800 text-xs text-white px-3 py-2 rounded shrink-0">إدراج منتج</button>
+                    <button onclick="switchAdminSubTab('manage-items')" id="sub-btn-manage-items" class="bg-[#050508] border border-gray-800 text-xs text-red-400 px-3 py-2 rounded shrink-0">تدمير وحذف البيانات</button>
+                </div>
+
+                <!-- النماذج البرمجية للوحة التحكم -->
+                <div id="sub-sec-add-chapter" class="admin-sub-content">
+                    <form onsubmit="handleMangaUpload(event)" class="flex flex-col gap-4">
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">رقم الفهرس التسلسلي</label><input type="number" id="ch-number" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">اسم وتسمية الفصل</label><input type="text" id="ch-title" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">رابط صورة غلاف الفصل المباشر</label><input type="url" id="ch-cover" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white font-mono text-left focus:outline-none focus:border-cyan-400" placeholder="https://..."></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">مصفوفة روابط الصفحات (رابط واحد في كل سطر)</label><textarea id="ch-pages" required rows="6" class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white font-mono text-left focus:outline-none focus:border-cyan-400" placeholder="https://example.com/p1.jpg&#10;https://example.com/p2.jpg"></textarea></div>
+                        <button type="submit" class="main-font-qahwa bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-black p-3 rounded-lg text-sm mt-2 hover:opacity-90 transition">تأكيد تشفير ونشر الفصل</button>
+                    </form>
+                </div>
+
+                <div id="sub-sec-add-news" class="admin-sub-content hidden">
+                    <form onsubmit="handleNewsUpload(event)" class="flex flex-col gap-4">
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">عنوان البث</label><input type="text" id="news-title" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">تفاصيل ومحتوى الخبر</label><textarea id="news-content" required rows="4" class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></textarea></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">صورة البث المرفقة</label><input type="url" id="news-img" class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white font-mono text-left focus:outline-none focus:border-cyan-400" placeholder="https://..."></div>
+                        <button type="submit" class="main-font-qahwa bg-purple-600 text-white font-bold p-2.5 rounded-lg text-sm mt-2 hover:opacity-90 transition">بث التحديث فوراً</button>
+                    </form>
+                </div>
+
+                <div id="sub-sec-add-product" class="admin-sub-content hidden">
+                    <form onsubmit="handleProductUpload(event)" class="flex flex-col gap-4">
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">اسم غرض المتجر</label><input type="text" id="prod-name" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">شارة السعر</label><input type="text" id="prod-price" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">شرح السلعة الموجز</label><input type="text" id="prod-desc" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">رابط صورة السلعة</label><input type="url" id="prod-img" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white font-mono text-left focus:outline-none focus:border-cyan-400" placeholder="https://..."></div>
+                        <div><label class="block text-xs font-bold text-gray-400 mb-1">رابط التحميل</label><input type="text" id="prod-link" required class="w-full bg-[#050508] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-cyan-400" value="#"></div>
+                        <button type="submit" class="main-font-qahwa bg-cyan-500 text-black font-bold p-2.5 rounded-lg text-sm mt-2 hover:opacity-90 transition">دمج السلعة بالمتجر</button>
+                    </form>
+                </div>
+
+                <div id="sub-sec-manage-items" class="admin-sub-content hidden">
+                    <h3 class="text-xs font-bold text-red-400 mb-3"><i class="fas fa-exclamation-triangle"></i> السجلات والبيانات الحالية:</h3>
+                    <div class="mb-4"><h4 class="text-[11px] font-bold text-gray-500 mb-2">سجلات الفصول:</h4><div id="admin-manga-list" class="flex flex-col gap-2 max-h-36 overflow-y-auto bg-black p-2 rounded border border-gray-900"></div></div>
+                    <div class="mb-4"><h4 class="text-[11px] font-bold text-gray-500 mb-2">سجلات الأخبار:</h4><div id="admin-news-list" class="flex flex-col gap-2 max-h-36 overflow-y-auto bg-black p-2 rounded border border-gray-900"></div></div>
+                    <div><h4 class="text-[11px] font-bold text-gray-500 mb-2">سجلات المتجر:</h4><div id="admin-store-list" class="flex flex-col gap-2 max-h-36 overflow-y-auto bg-black p-2 rounded border border-gray-900"></div></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- الفوتر السفلي الرقمي -->
+    <footer class="bg-[#0b0c10] text-center py-4 border-t border-purple-950 text-[11px] text-gray-600 w-full mt-auto tracking-widest uppercase font-mono">
+        DATA NETWORK CONNECTED // <span class="text-[#66fcf1] font-bold">THE LAST IMPRINT</span> © 2026 BY HAMODI ALMEDAINY
+    </footer>
+
+    <!-- المنطق البرمجي وتشغيل قواعد البيانات المحلية السريعة -->
+    <script>
+        let isAdminAuthenticated = false;
+
+        if (!localStorage.getItem('imprint_manga')) {
+            localStorage.setItem('imprint_manga', JSON.stringify([
+                {
+                    num: 1, 
+                    title: "الفصل 1: البداية واللقاء المعقد", 
+                    cover: "https://files.catbox.moe/84blee.jpg", 
+                    pages: ["https://files.catbox.moe/84blee.jpg"]
+                }
+            ]));
+        }
+        if (!localStorage.getItem('imprint_news')) {
+            localStorage.setItem('imprint_news', JSON.stringify([
+                {
+                    title: "الإعلان الرسمي والتشغيلي لمنصة البصمة الأخيرة", 
+                    date: "2026-06-09", 
+                    content: "يسرنا الكشف رسمياً عن واجهة منصتنا الحصرية المستقلة لعرض المانجا الرقمية 'البصمة الأخيرة'، بمزيج بوليسي معقد ومستقبل افتراضي سيبراني لعام 6026. ترقبوا تحميل بقية الفصول قريباً عبر لوحة البث الخاصة بنا.", 
+                    img: "https://files.catbox.moe/84blee.jpg"
+                }
+            ]));
+        }
+        if (!localStorage.getItem('imprint_store')) {
+            localStorage.setItem('imprint_store', JSON.stringify([
+                {
+                    name: "الملصق الفني الفائق بدقة 4K", 
+                    price: "مجاني بالكامل", 
+                    desc: "قم بتنزيل الغلاف الفني عالي الجودة والدقة الخاص بالبصمة الأخيرة كخلفية شاشة متكاملة لهاتفك الذكي.", 
+                    img: "https://files.catbox.moe/84blee.jpg", 
+                    link: "https://files.catbox.moe/84blee.jpg"
+                }
+            ]));
+        }
+
+        function tryAccessAdmin() {
+            if (isAdminAuthenticated) {
+                switchTab('admin');
+            } else {
+                const username = prompt("أدخل اسم المستخدم للوصول الفوقي:");
+                if (username === null) return; 
+
+                const password = prompt("أدخل كلمة المرور السرية للمؤلف:");
+                if (password === null) return; 
+
+                if (username === "hamodialmedainy" && password === "Thelastimprint6026") {
+                    isAdminAuthenticated = true;
+                    alert("مرحباً Hamodi. تم فك التشفير والتحقق من الهوية السيبرانية بنجاح!");
+                    switchTab('admin');
+                } else {
+                    alert("فشل التحقق! تم حظر المحاولة عشوائياً.");
+                }
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            if(tabName === 'reader') {
+                document.getElementById('sec-reader').classList.remove('hidden');
+            } else {
+                document.getElementById('sec-' + tabName).classList.remove('hidden');
+                document.getElementById('btn-' + tabName).classList.add('active');
+            }
+            window.scrollTo(0,0);
+            if(tabName === 'admin') {
+                if(!isAdminAuthenticated) { switchTab('info'); return; }
+                switchAdminSubTab('add-chapter');
+                renderAdminManagementLists();
+            }
+        }
+
+        function switchAdminSubTab(subTabId) {
+            document.querySelectorAll('.admin-sub-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="sub-btn-"]').forEach(el => el.classList.remove('bg-purple-600', 'text-white', 'bg-cyan-500', 'text-black'));
+            
+            document.getElementById('sub-sec-' + subTabId).classList.remove('hidden');
+            if(subTabId === 'manage-items') {
+                document.getElementById('sub-btn-' + subTabId).classList.add('bg-purple-600', 'text-white');
+            } else {
+                document.getElementById('sub-btn-' + subTabId).classList.add('bg-cyan-500', 'text-black');
+            }
+        }
+
+        function updateAppUI() {
+            const mangaData = JSON.parse(localStorage.getItem('imprint_manga'));
+            const newsData = JSON.parse(localStorage.getItem('imprint_news'));
+            const storeData = JSON.parse(localStorage.getItem('imprint_store'));
+
+            document.getElementById('info-chapters-count').innerText = mangaData.length + " فصول";
+
+            const mangaListDiv = document.getElementById('manga-list');
+            if(mangaData.length === 0) {
+                mangaListDiv.innerHTML = '<p class="text-gray-600 col-span-full text-center py-6 text-xs">لا توجد فصول مدرجة حالياً.</p>';
+            } else {
+                mangaListDiv.innerHTML = mangaData.map(ch => `
+                    <div onclick="openMangaReader('${ch.title}', ${JSON.stringify(ch.pages).replace(/"/g, '&quot;')})" class="bg-[#0b0c10] rounded-xl overflow-hidden border border-gray-800 cursor-pointer shadow-lg neon-glow-hover group">
+                        <div class="overflow-hidden h-44 bg-black relative">
+                            <img src="${ch.cover}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="">
+                            <span class="absolute top-2 right-2 bg-black/80 text-[#66fcf1] text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-cyan-500/20">CH ${ch.num}</span>
+                        </div>
+                        <div class="p-3 text-center text-xs font-bold text-white truncate border-t border-gray-900 main-font-qahwa">${ch.title}</div>
+                    </div>
+                `).join('');
+            }
+
+            const newsListDiv = document.getElementById('news-list');
+            if(newsData.length === 0) {
+                newsListDiv.innerHTML = '<p class="text-gray-600 text-center py-6 text-xs">لا تتوفر أنباء جديدة.</p>';
+            } else {
+                newsListDiv.innerHTML = newsData.map(n => `
+                    <div class="bg-[#0b0c10] p-4 rounded-xl border border-gray-900 shadow-md neon-glow">
+                        ${n.img ? `<img src="${n.img}" class="w-full h-48 object-cover rounded-lg mb-3 border border-gray-900 shadow-inner">` : ''}
+                        <div class="text-[10px] text-cyan-400 font-mono font-bold mb-1"><i class="far fa-clock"></i> ${n.date} // ENCRYPTED_BROADCAST</div>
+                        <h3 class="text-sm font-bold text-white mb-2">${n.title}</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed text-justify">${n.content}</p>
+                    </div>
+                `).join('');
+            }
+
+            const storeListDiv = document.getElementById('store-list');
+            if(storeData.length === 0) {
+                storeListDiv.innerHTML = '<p class="text-gray-600 col-span-full text-center py-6 text-xs">المخزن الرقمي فارغ.</p>';
+            } else {
+                storeListDiv.innerHTML = storeData.map(p => `
+                    <div class="bg-[#0b0c10] flex gap-3 p-3 rounded-xl border border-gray-900 shadow-md">
+                        <img src="${p.img}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0 border border-gray-800">
+                        <div class="flex flex-col justify-between w-full">
+                            <div>
+                                <h4 class="font-bold text-xs text-white">${p.name}</h4>
+                                <p class="text-[10px] text-gray-400 mt-1 line-clamp-2">${p.desc}</p>
+                            </div>
+                            <div class="flex justify-between items-center mt-2 border-t border-gray-900/40 pt-2">
+                                <span class="text-[10px] font-black text-green-400 font-mono">${p.price}</span>
+                                <a href="${p.link}" target="_blank" class="main-font-qahwa bg-[#66fcf1] text-black text-[10px] font-bold px-2.5 py-1 rounded-md hover:shadow-cyan-500/20 hover:shadow-md transition">GET</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function openMangaReader(title, pages) {
+            document.getElementById('reader-title').innerText = title;
+            const viewer = document.getElementById('viewer-pages');
+            viewer.innerHTML = pages.map((p, idx) => `
+                <div class="relative w-full max-w-xl text-center">
+                    <img src="${p}" class="w-full object-contain border border-black rounded shadow-2xl" loading="lazy" alt="صفحة ${idx+1}">
+                    <span class="absolute bottom-2 left-2 bg-black/80 text-[9px] text-gray-400 font-mono px-2 py-0.5 rounded border border-gray-800">PAGE ${idx+1}</span>
+                </div>
+            `).join('');
+            switchTab('reader');
+        }
+
+        function renderAdminManagementLists() {
+            const mangaData = JSON.parse(localStorage.getItem('imprint_manga'));
+            const newsData = JSON.parse(localStorage.getItem('imprint_news'));
+            const storeData = JSON.parse(localStorage.getItem('imprint_store'));
+
+            document.getElementById('admin-manga-list').innerHTML = mangaData.map((ch, idx) => `
+                <div class="flex justify-between items-center bg-[#050508] p-2 rounded text-[11px] border border-gray-900">
+                    <span class="text-gray-300">CH ${ch.num}: ${ch.title}</span>
+                    <button onclick="deleteItem('manga', ${idx})" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('') || '<span class="text-gray-600 text-xs p-1">لا يوجد فصول.</span>';
+
+            document.getElementById('admin-news-list').innerHTML = newsData.map((n, idx) => `
+                <div class="flex justify-between items-center bg-[#050508] p-2 rounded text-[11px] border border-gray-900">
+                    <span class="text-gray-300 truncate max-w-[220px]">${n.title}</span>
+                    <button onclick="deleteItem('news', ${idx})" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('') || '<span class="text-gray-600 text-xs p-1">لا يوجد أخبار.</span>';
+
+            document.getElementById('admin-store-list').innerHTML = storeData.map((p, idx) => `
+                <div class="flex justify-between items-center bg-[#050508] p-2 rounded text-[11px] border border-gray-900">
+                    <span class="text-gray-300 truncate max-w-[220px]">${p.name}</span>
+                    <button onclick="deleteItem('store', ${idx})" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('') || '<span class="text-gray-600 text-xs p-1">لا يوجد منتجات.</span>';
+        }
+
+        function handleMangaUpload(e) {
+            e.preventDefault();
+            const num = parseInt(document.getElementById('ch-number').value);
+            const title = document.getElementById('ch-title').value;
+            const cover = document.getElementById('ch-cover').value;
+            const pagesText = document.getElementById('ch-pages').value;
+            const pages = pagesText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+
+            const mangaData = JSON.parse(localStorage.getItem('imprint_manga'));
+            mangaData.push({ num, title: "الفصل " + num + ": " + title, cover, pages });
+            mangaData.sort((a,b) => a.num - b.num);
+
+            localStorage.setItem('imprint_manga', JSON.stringify(mangaData));
+            alert('تم نشر الفصل الجديد!');
+            e.target.reset();
+            updateAppUI();
+            switchTab('manga');
+        }
+
+        function handleNewsUpload(e) {
+            e.preventDefault();
+            const title = document.getElementById('news-title').value;
+            const content = document.getElementById('news-content').value;
+            const img = document.getElementById('news-img').value;
+            const date = new Date().toISOString().split('T')[0];
+
+            const newsData = JSON.parse(localStorage.getItem('imprint_news'));
+            newsData.unshift({ title, content, img, date });
+
+            localStorage.setItem('imprint_news', JSON.stringify(newsData));
+            alert('تم بث الخبر!');
+            e.target.reset();
+            updateAppUI();
+            switchTab('news');
+        }
+
+        function handleProductUpload(e) {
+            e.preventDefault();
+            const name = document.getElementById('prod-name').value;
+            const price = document.getElementById('prod-price').value;
+            const desc = document.getElementById('prod-desc').value;
+            const img = document.getElementById('prod-img').value;
+            const link = document.getElementById('prod-link').value;
+
+            const storeData = JSON.parse(localStorage.getItem('imprint_store'));
+            storeData.push({ name, price, desc, img, link });
+
+            localStorage.setItem('imprint_store', JSON.stringify(storeData));
+            alert('تم إدراج المنتج!');
+            e.target.reset();
+            updateAppUI();
+            switchTab('store');
+        }
+
+        function deleteItem(type, index) {
+            if(confirm('هل أنت متأكد من الحذف؟')) {
+                const key = 'imprint_' + type;
+                const data = JSON.parse(localStorage.getItem(key));
+                data.splice(index, 1);
+                localStorage.setItem(key, JSON.stringify(data));
+                updateAppUI();
+                renderAdminManagementLists();
+            }
+        }
+
+        window.onload = function() {
+            updateAppUI();
+        };
+    </script>
+</body>
+</html>
