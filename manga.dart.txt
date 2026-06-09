@@ -1,6 +1,0 @@
-class Manga {
-  String name;
-  String description;
-
-  Manga({required this.name, required this.description});
-}
