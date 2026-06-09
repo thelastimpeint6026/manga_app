@@ -1,6 +1,0 @@
-class Chapter {
-  String title;
-  List<String> images;
-
-  Chapter({required this.title, required this.images});
-}
